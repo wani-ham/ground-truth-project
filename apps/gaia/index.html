@@ -371,9 +371,9 @@ footer.foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--g
 #narrChip { display: none; }
 #narrChip.on { display: inline-flex; border-color: var(--burgundy); color: var(--burgundy); }
 #narrChip button { background: none; border: 0; color: var(--burgundy); font-weight: 600; padding: 0 0 0 4px; }
-.rowB { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+.rowB { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; }
 .netwrap { position: relative; }
-#net { width: 100%; height: auto; display: block; }
+#net { width: 100%; height: auto; max-height: max(340px, calc(100vh - 470px)); display: block; }
 #net text { font-family: var(--f-body); }
 #net .lname { font-size: 15px; fill: var(--ink); paint-order: stroke; stroke: var(--paper-deep); stroke-width: 5px; stroke-linejoin: round; }
 #net .lhead { font-size: 12px; font-weight: 600; letter-spacing: .18em; fill: var(--ink-muted); }
@@ -396,9 +396,9 @@ footer.foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--g
 .legend { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center; margin-top: 14px; font-size: 0.9rem; }
 .legend svg { width: 24px; height: 24px; display: block; }
 .attr { margin-top: 18px; padding: 12px 14px; border: 1px solid var(--grid); border-radius: 10px; background: var(--paper); }
-.rowC { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.nlist { margin-top: 12px; }
-.ngroup { margin-top: 12px; }
+.rowR { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.nlist { margin-top: 12px; columns: 2; column-gap: 48px; }
+.ngroup { margin-top: 12px; break-inside: avoid; }
 .ngroup .label { display: block; margin-bottom: 4px; }
 .nrow { display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto auto; gap: 4px 12px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-radius: 8px; padding: 5px 8px; font-size: 0.85rem; line-height: 1.35; transition: opacity .25s, background .2s; }
 .nrow:hover { background: var(--paper); }
@@ -444,6 +444,40 @@ footer.foot { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--g
 .reco .verb { font-family: var(--f-display); font-weight: 800; font-size: 1.6rem; color: var(--burgundy); letter-spacing: -0.02em; }
 .reco .st { margin-top: 12px; display: flex; align-items: baseline; gap: 10px; }
 .reco .st .num { font-size: 1.6rem; color: var(--burgundy); font-weight: 500; }
+
+/* Report sections: one topic on screen at a time */
+.report-nav { position: sticky; top: 84px; z-index: 40; display: flex; align-items: center; gap: 4px; margin: -28px -32px 0; padding: 8px 32px; background: var(--paper); border-bottom: 1px solid var(--grid); }
+.report-nav button[data-rp] { background: none; border: 0; border-radius: 8px; padding: 7px 14px; color: var(--ink-muted); font-weight: 600; font-size: .9rem; white-space: nowrap; }
+.report-nav button[data-rp]:hover { background: var(--paper-deep); color: var(--ink); }
+.report-nav button[aria-current="true"] { background: var(--burgundy); color: var(--paper); }
+.report-nav button[aria-current="true"]:hover { background: var(--burgundy-deep); color: var(--paper); }
+.report-nav .spacer { margin-left: auto; }
+.report-nav #exportPdf { white-space: nowrap; }
+.filters { padding: 12px 0 0; margin-top: 0; }
+.filters.off { display: none; }
+.rp { display: none; }
+.rp.active { display: block; animation: fade .2s ease; }
+.rp > .row:first-child { margin-top: 16px; }
+.rp-foot { display: flex; justify-content: flex-end; margin-top: 18px; }
+.report-head { margin-top: 28px; }
+.report-head h1 { font-size: 1.75rem; max-width: 34em; margin-top: 4px; }
+.report-head .case-meta { gap: 6px 22px; font-size: .88rem; }
+#rp-summary .headline { font-size: 1.15rem; line-height: 1.65; max-width: 60em; margin-top: 24px; }
+#rp-summary .kpis { margin-top: 28px; }
+.kpi .v { font-size: 34px; }
+.kpi .l { font-size: .88rem; line-height: 1.4; }
+.side { padding: 18px 20px; font-size: .82rem; line-height: 1.45; }
+.side h3 { font-size: 1rem; }
+.side .facts { gap: 4px 12px; margin-top: 10px; }
+.side .facts > div:nth-child(even) { white-space: nowrap; }
+.side .legend { gap: 4px 10px; margin-top: 10px; font-size: .8rem; }
+.side .legend svg { width: 18px; height: 18px; }
+.side .attr { margin-top: 10px; padding: 8px 10px; }
+.netctl { flex-wrap: wrap; }
+.netctl input { min-width: 120px; }
+.rowT .titlebar { display: block; }
+.rowT .corrctl { margin-top: 12px; }
+#rp-actions > .label { margin-top: 28px; }
 
 /* ---------- Tab 3: monitor ---------- */
 .mtop { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
@@ -503,16 +537,14 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
   .flow { grid-template-columns: repeat(3, 1fr); }
   .step { min-height: 0; }
   .step::after { display: none; }
-  .rowB { grid-template-columns: 1fr; }
-  .rowC { grid-template-columns: 1fr 1fr; }
-  .rowC > .card:first-child { grid-row: span 2; }
-  .kpi .v { font-size: 42px; }
   header.band { gap: 22px; padding: 0 22px; }
   .lockup .prod { font-size: 1rem; }
   nav.tabs button { padding: 0 12px; font-size: 0.92rem; }
 }
 @media (max-width: 1240px) {
   .kpis { grid-template-columns: repeat(3, 1fr); }
+  .rowB { grid-template-columns: minmax(0, 1fr); }
+  #net { max-height: none; }
   .rowMA { grid-template-columns: 1fr; }
   nav.tabs button .k { display: none; }
 }
@@ -521,8 +553,9 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
   header.band { height: auto; flex-wrap: wrap; padding: 10px 16px; gap: 8px 16px; }
   nav.tabs { order: 3; width: 100%; overflow-x: auto; height: 44px; }
   main { padding: 20px 16px; }
-  .flow, .rowC, .rowE, .kpis { grid-template-columns: 1fr; }
-  .rowC > .card:first-child { grid-row: auto; }
+  .flow, .rowR, .rowE, .kpis { grid-template-columns: 1fr; }
+  .nlist { columns: 1; }
+  .report-nav { position: static; overflow-x: auto; margin: -20px -16px 0; padding: 8px 16px; }
 }
 
 /* ---------- Print: "Download PDF report" ---------- */
@@ -534,9 +567,11 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
   section.tab { display: none !important; }
   #tab-report { display: block !important; }
   .card { break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .report-nav, .rp-foot { display: none !important; }
+  .rp { display: block !important; animation: none !important; }
+  .filters.off { display: flex !important; }
+  #net { max-height: none; }
   .rowB { grid-template-columns: 3fr 2fr; }
-  .rowC { grid-template-columns: repeat(3, 1fr); }
-  .rowC > .card:first-child { grid-row: auto; }
 }
 </style>
 </head>
@@ -642,6 +677,29 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
 
 <!-- ======================= TAB 2 ======================= -->
 <section class="tab" id="tab-report" data-tab="2">
+  <nav class="report-nav" aria-label="Report sections">
+    <button data-rp="summary" aria-current="true">Summary</button>
+    <button data-rp="network">Network</button>
+    <button data-rp="narratives">Narratives</button>
+    <button data-rp="reach">Reach</button>
+    <button data-rp="timing">Timing</button>
+    <button data-rp="actions">Actions</button>
+    <span class="spacer"></span>
+    <button class="btn small" id="exportPdf">Download PDF</button>
+  </nav>
+
+  <div class="filters" id="reportFilters">
+    <label><span class="label">Narrative cluster</span>
+      <select id="fCluster"><option value="all">All</option></select></label>
+    <label><span class="label">Country</span>
+      <select id="fCountry"><option value="all">All</option><option>DE</option><option>FR</option><option>IT</option><option>PL</option><option>CZ</option><option>AT</option></select></label>
+    <span class="chip" id="narrChip"><span id="narrChipT"></span><button id="narrClear" aria-label="Clear narrative filter">&times;</button></span>
+    <span class="spacer"></span>
+    <button class="btn ghost small" id="resetFilters">Reset filters</button>
+  </div>
+
+  <div class="rp active" id="rp-summary">
+    <div class="report-head">
   <div class="label">Study report · <span class="eu">EU level</span></div>
   <h1 id="caseTitle"></h1>
   <div class="case-meta">
@@ -650,22 +708,13 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
     <span><span class="label">Languages</span>&nbsp; <span class="num" id="caseLang"></span></span>
     <span><span class="label">Model performance</span>&nbsp; <span class="num" data-ref="perf">[ref1]</span></span>
   </div>
+    </div>
   <p class="headline" id="headline"></p>
-
   <div class="kpis" id="kpis"></div>
-
-  <div class="card filters">
-    <label><span class="label">Narrative cluster</span>
-      <select id="fCluster"><option value="all">All</option></select></label>
-    <label><span class="label">Country</span>
-      <select id="fCountry"><option value="all">All</option><option>DE</option><option>FR</option><option>IT</option><option>PL</option><option>CZ</option><option>AT</option></select></label>
-    <span class="chip" id="narrChip"><span id="narrChipT"></span><button id="narrClear" aria-label="Clear narrative filter">&times;</button></span>
-    <span class="spacer"></span>
-    <button class="btn ghost small" id="resetFilters">Reset filters</button>
-    <button class="btn" id="exportPdf">Download PDF report</button>
+    <div class="rp-foot"><button class="btn ghost small" data-go="network">Next: Network &rarr;</button></div>
   </div>
 
-  <!-- Row B -->
+  <div class="rp" id="rp-network">
   <div class="row rowB">
     <div class="card">
       <div class="titlebar"><h2>Propagation network</h2><span class="muted" style="font-size:.85rem">Edge width = narrative-matched items · node size = items · click a node to trace its path</span></div>
@@ -679,15 +728,23 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
     </div>
     <div class="card side" id="side"></div>
   </div>
+    <div class="rp-foot"><button class="btn ghost small" data-go="narratives">Next: Narratives &rarr;</button></div>
+  </div>
 
-  <!-- Row C -->
-  <div class="row rowC">
+  <div class="rp" id="rp-narratives">
+    <div class="row rowN">
     <div class="card">
       <h2>Top narratives</h2>
       <div class="muted" style="font-size:.85rem">Click a narrative to filter the dashboard</div>
       <div class="nlist" id="nlist"></div>
       <div class="foot-note" id="footnote"></div>
     </div>
+    </div>
+    <div class="rp-foot"><button class="btn ghost small" data-go="reach">Next: Reach &rarr;</button></div>
+  </div>
+
+  <div class="rp" id="rp-reach">
+    <div class="row rowR">
     <div class="card">
       <div class="titlebar"><h2>Where the bot content goes</h2>
         <div class="seg" id="reachSeg"><button aria-pressed="true" data-k="posts">Posts</button><button aria-pressed="false" data-k="impressions">Impressions</button></div></div>
@@ -703,10 +760,12 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
       <div class="lbars" id="lbars"></div>
       <p class="sowhat">So what? About 1 in 14 bot narratives reaches public sources. Alternative portals are the bridge.</p>
     </div>
+    </div>
+    <div class="rp-foot"><button class="btn ghost small" data-go="timing">Next: Timing &rarr;</button></div>
   </div>
 
-  <!-- Row D -->
-  <div class="row">
+  <div class="rp" id="rp-timing">
+  <div class="row rowT">
     <div class="card">
       <div class="titlebar">
         <h2>Time correlation: bot posts vs news pickups</h2>
@@ -723,10 +782,13 @@ table.feed tbody tr.new { animation: flash 1.6s ease 2; }
       <p class="sowhat">So what? Bot activity spikes 2–3 days before political events and before news pickup. That is the window to respond.</p>
     </div>
   </div>
+    <div class="rp-foot"><button class="btn ghost small" data-go="actions">Next: Actions &rarr;</button></div>
+  </div>
 
-  <!-- Row E -->
+  <div class="rp" id="rp-actions">
   <div class="label" style="margin-top:28px">Recommendations · control your narrative</div>
   <div class="row rowE" id="recos" style="margin-top:10px"></div>
+  </div>
 
   <footer class="foot">
     <span>Method: supervised ML classification + network analysis, human-reviewed · GDPR by design: aggregate, pseudonymised.</span>
@@ -1331,6 +1393,9 @@ const Report = (() => {
     $("#narrClear").addEventListener("click", () => setNarrative(null));
     $("#resetFilters").addEventListener("click", resetFilters);
     $("#exportPdf").addEventListener("click", () => window.print());
+    $$("#tab-report [data-rp], #tab-report [data-go]").forEach(b => b.addEventListener("click", () => showSection(b.dataset.rp || b.dataset.go)));
+    addEventListener("beforeprint", resizeCharts);
+    addEventListener("afterprint", resizeCharts);
     $$("#reachSeg button").forEach(b => b.addEventListener("click", () => { reachKey = b.dataset.k; $$("#reachSeg button").forEach(x => x.setAttribute("aria-pressed", x === b)); updateReach(); }));
     $("#lag").addEventListener("input", updateLag);
     $("#elecToggle").addEventListener("click", e => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", on); updateElection(on); });
@@ -1420,19 +1485,28 @@ const Report = (() => {
     Object.assign(state, { cluster: "all", narrative: null, country: "all", week: 26, selected: null });
     $("#fCountry").value = "all"; NetworkGraph.stopPlay(); refresh();
   }
+  function resizeCharts() { [reachChart, gaugeChart, timeChart].forEach(c => c && c.resize()); }
+  function showSection(id) {
+    $$(".report-nav button[data-rp]").forEach(b => b.dataset.rp === id ? b.setAttribute("aria-current", "true") : b.removeAttribute("aria-current"));
+    $$("#tab-report .rp").forEach(p => p.classList.toggle("active", p.id === `rp-${id}`));
+    $("#reportFilters").classList.toggle("off", id === "timing" || id === "actions");
+    $("#tooltip").style.display = "none";
+    window.scrollTo(0, 0);
+    resizeCharts();
+  }
   function onShow() {
     if (!started) { started = true; initCharts(); }
-    KpiTile.run(); updateGauge();
+    KpiTile.run(); updateGauge(); resizeCharts();
   }
   function reset() {
-    resetFilters();
+    resetFilters(); showSection("summary");
     if (started) {
       $("#lag").value = 0; updateLag();
       $("#elecToggle").setAttribute("aria-pressed", "false"); updateElection(false);
       reachKey = "posts"; $$("#reachSeg button").forEach(x => x.setAttribute("aria-pressed", x.dataset.k === "posts")); updateReach();
     }
   }
-  return { initStatic, onShow, reset, setNarrative, refresh };
+  return { initStatic, onShow, reset, setNarrative, refresh, showSection };
 })();
 
 /* ===================== TAB 3: Alert monitor ===================== */
@@ -1581,7 +1655,7 @@ const App = {
       if (e.key === "ArrowRight") {
         e.preventDefault();
         if (this.cur === 1) Process.next();
-        else if (this.cur === 2) NetworkGraph.play();
+        else if (this.cur === 2) { Report.showSection("network"); NetworkGraph.play(); }
         else if (this.cur === 3) AlertFeed.next();
         return;
       }
