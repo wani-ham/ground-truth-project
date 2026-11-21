@@ -58,6 +58,10 @@ input[type='checkbox']:checked::after { content: '✓'; color: var(--paper); fon
 .app-header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 32px; align-items: center; padding: 10px 16px; color: var(--paper); background: var(--burgundy); }
 .brand h1 { font-size: 26px; line-height: 1.1; }
 .brand span { font-size: 12px; }
+.brand-row { display: flex; align-items: center; gap: 12px; }
+.product-link { padding: 1px 8px; font-size: 12px; font-weight: 600; color: var(--paper); text-decoration: none; border: 1px solid var(--paper); border-radius: 4px; }
+.product-link:hover { background: var(--burgundy-deep); }
+.product-link:focus-visible { outline-color: var(--paper); }
 .narrative, .clock { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
 .narrative strong { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
 .narrative span:last-child { font-size: 12px; }

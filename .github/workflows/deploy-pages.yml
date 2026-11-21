@@ -42,7 +42,8 @@ jobs:
         run: |
           mkdir -p _site
           cp -R apps/argus/dist _site/argus
-          printf '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=argus/"><title>ARGUS</title><a href="argus/">Open ARGUS</a>\n' > _site/index.html
+          cp -R apps/gaia _site/gaia
+          printf '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=argus/"><title>Ground Truth</title><a href="argus/">Open ARGUS</a> <a href="gaia/">Open GAIA</a>\n' > _site/index.html
 
       - uses: actions/upload-pages-artifact@v3
         with:

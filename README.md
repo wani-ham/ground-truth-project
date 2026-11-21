@@ -5,11 +5,11 @@ Tools for spotting and countering foreign disinformation during election periods
 | Tool | Status | Purpose |
 | --- | --- | --- |
 | **ARGUS** | Demo available | Visualizes how a disinformation narrative spreads and shows how its pattern can trigger an early warning |
-| **GAIA** | Planned | Not built yet |
+| **GAIA** | Demo available | Shows the study process, an interactive report on a bot network, and an optional alert monitor |
 
-**[Open the ARGUS demo](https://wani-ham.github.io/ground-truth-project/argus/)**
+**[Open the ARGUS demo](https://wani-ham.github.io/ground-truth-project/argus/)** · **[Open the GAIA demo](https://wani-ham.github.io/ground-truth-project/gaia/)**
 
-> **Simulated data.** Every country, outlet, account, politician, and claim in the demo is fictional. ARGUS does not collect live data, and it does not send alerts.
+> **Simulated data.** Every country, outlet, account, politician, and claim in the ARGUS demo is fictional. All GAIA figures are synthetic and for illustration only. Neither demo collects live data or sends alerts.
 
 ## ARGUS
 
@@ -72,7 +72,7 @@ npm install
 npm run dev
 ```
 
-Then open the local URL that Vite prints.
+Then open the local URL that Vite prints. GAIA is available at `/gaia/` on the same server.
 
 | Command | Purpose |
 | --- | --- |
@@ -89,6 +89,9 @@ apps/argus/
   src/engine/detection.ts     Signal scoring and alert stages
   src/engine/playback.ts      Timeline and tracing helpers
   src/components/             Graph, timeline, panels, and alert briefing
+apps/gaia/
+  index.html                  Self-contained GAIA demo
+  fonts/                      Brand fonts
 .github/workflows/            GitHub Pages deployment
 ```
 

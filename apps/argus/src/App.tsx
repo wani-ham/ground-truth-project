@@ -100,7 +100,12 @@ export default function App() {
 
       <header className="app-header">
         <div className="brand">
-          <h1>ARGUS</h1>
+          <div className="brand-row">
+            <h1>ARGUS</h1>
+            <a className="product-link" href="../gaia/">
+              GAIA →
+            </a>
+          </div>
           <span>Disinformation network early warning</span>
         </div>
         <div className="narrative">
