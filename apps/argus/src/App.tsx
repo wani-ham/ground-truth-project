@@ -14,12 +14,17 @@ function parseHash(hash: string): Route {
   return { view: 'phases', phase: match[1] ? (Number(match[1]) as PhaseId) : null }
 }
 
+const PLAY_STEP_MS = 1400
+const LAST_WEEK = WEEKS.length - 1
+
 const anchorAt = (date: Date): ScenarioAnchor => ({ date: date.getTime(), chosenAt: Date.now() })
 
 export default function App() {
   const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash))
   const [presetId, setPresetId] = useState<string | null>(DEFAULT_PRESET.id)
   const [anchor, setAnchor] = useState<ScenarioAnchor>(() => anchorAt(localDate(DEFAULT_PRESET.date)))
+
+  const [playing, setPlaying] = useState(false)
 
   useEffect(() => {
     const onHash = () => setRoute(parseHash(window.location.hash))
@@ -34,17 +39,51 @@ export default function App() {
   const choosePreset = useCallback((id: string) => {
     const preset = SCENARIO_PRESETS.find((item) => item.id === id)
     if (!preset) return
+    setPlaying(false)
     setPresetId(id)
     setAnchor(anchorAt(localDate(preset.date)))
   }, [])
 
-  const chooseWeek = useCallback((week: number) => {
-    const clamped = Math.max(0, Math.min(WEEKS.length - 1, week))
+  const moveToWeek = useCallback((week: number) => {
+    const clamped = Math.max(0, Math.min(LAST_WEEK, week))
     const date = localDate(WEEKS[clamped])
     date.setHours(10, 0, 0, 0)
     setPresetId(null)
     setAnchor(anchorAt(date))
   }, [])
+
+  const chooseWeek = useCallback((week: number) => {
+    setPlaying(false)
+    moveToWeek(week)
+  }, [moveToWeek])
+
+  const togglePlay = useCallback(() => {
+    if (playing) {
+      setPlaying(false)
+      return
+    }
+    if (weekIndexFor(scenarioTime(anchor)) >= LAST_WEEK) moveToWeek(0)
+    setPlaying(true)
+  }, [anchor, moveToWeek, playing])
+
+  useEffect(() => {
+    if (!playing) return
+    if (route.view !== 'phases') {
+      setPlaying(false)
+      return
+    }
+    const timer = window.setTimeout(() => {
+      // Data behind an open report or review dialog must not change while it is being read.
+      if (document.querySelector('dialog[open]')) {
+        setPlaying(false)
+        return
+      }
+      const next = weekIndexFor(scenarioTime(anchor)) + 1
+      moveToWeek(next)
+      if (next >= LAST_WEEK) setPlaying(false)
+    }, PLAY_STEP_MS)
+    return () => window.clearTimeout(timer)
+  }, [anchor, moveToWeek, playing, route.view])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -92,6 +131,8 @@ export default function App() {
         phase={route.view === 'phases' ? route.phase : null}
         anchor={anchor}
         presetId={presetId}
+        playing={playing}
+        onTogglePlay={togglePlay}
         onPreset={choosePreset}
         onWeek={chooseWeek}
         onNavigate={go}

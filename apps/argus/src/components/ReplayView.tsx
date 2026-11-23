@@ -100,9 +100,10 @@ export function ReplayView({ active }: { active: boolean }) {
   return (
     <div className="replay-view" hidden={!active}>
       <div className="replay-bar">
-        <div className="narrative">
+        <div className="narrative tracked-narrative">
           <span className="eyebrow">Tracked narrative</span>
-          <span><strong>{NARRATIVE.title}</strong> · False claim: {NARRATIVE.claim}</span>
+          <strong>{NARRATIVE.title}</strong>
+          <span>False claim: {NARRATIVE.claim}</span>
         </div>
         <div className="clock" aria-live="off">
           <span className="eyebrow">Simulation time</span>

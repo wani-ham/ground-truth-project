@@ -233,6 +233,11 @@ fieldset label, .review { display: flex; gap: 7px; align-items: center; cursor: 
 .replay-bar { display: flex; justify-content: space-between; gap: 24px; align-items: center; padding: 4px 16px; font-size: 12px; color: var(--paper); background: var(--burgundy-deep); }
 .replay-bar .eyebrow { color: var(--paper); opacity: 0.85; }
 .replay-bar .narrative { min-width: 0; }
+.replay-bar { padding: 8px 16px; }
+.tracked-narrative { padding-left: 12px; border-left: 3px solid var(--paper); }
+.replay-bar .tracked-narrative .eyebrow { opacity: 1; font-weight: 600; }
+.tracked-narrative strong { font-size: 18px; line-height: 1.25; }
+.replay-bar .tracked-narrative span:last-child { font-size: 13.5px; }
 .replay-bar .clock strong { font-size: 13px; }
 .view-switch { display: flex; gap: 2px; }
 .view-switch button { color: var(--paper); background: transparent; border-color: var(--paper); white-space: nowrap; }
@@ -262,6 +267,9 @@ fieldset label, .review { display: flex; gap: 7px; align-items: center; cursor: 
 .scenario-control .caveat { margin: 0; max-width: 220px; }
 .segmented { display: flex; flex-wrap: wrap; gap: 2px; }
 .segmented button { min-height: 28px; padding: 2px 9px; font-size: 12px; }
+.week-play { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.week-play > button { flex: none; min-width: 82px; }
+.week-play .week-slider { flex: 1; min-width: 0; }
 .week-slider { display: flex; flex-direction: column; font-size: 11px; color: var(--ink-muted); }
 .week-slider input { width: 100%; accent-color: var(--burgundy); }
 .phase-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 8px 14px; color: var(--paper); background: var(--burgundy); border-radius: 6px; }

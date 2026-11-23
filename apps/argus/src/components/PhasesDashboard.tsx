@@ -15,12 +15,14 @@ interface Props {
   phase: PhaseId | null
   anchor: ScenarioAnchor
   presetId: string | null
+  playing: boolean
+  onTogglePlay: () => void
   onPreset: (id: string) => void
   onWeek: (week: number) => void
   onNavigate: (hash: string) => void
 }
 
-export function PhasesDashboard({ active, phase, anchor, presetId, onPreset, onWeek, onNavigate }: Props) {
+export function PhasesDashboard({ active, phase, anchor, presetId, playing, onTogglePlay, onPreset, onWeek, onNavigate }: Props) {
   const now = useScenarioNow(anchor, 30_000)
   const week = weekIndexFor(now)
   const [sessionReported, setSessionReported] = useState<Set<string>>(new Set())
@@ -56,7 +58,7 @@ export function PhasesDashboard({ active, phase, anchor, presetId, onPreset, onW
 
   return (
     <main className="phases-view" hidden={!active}>
-      <ScenarioDateControl presetId={presetId} week={week} now={now} onPreset={onPreset} onWeek={onWeek} />
+      <ScenarioDateControl presetId={presetId} week={week} now={now} playing={playing} onTogglePlay={onTogglePlay} onPreset={onPreset} onWeek={onWeek} />
 
       {phase ? (
         <PhaseDetail
