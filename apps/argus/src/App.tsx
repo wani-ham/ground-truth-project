@@ -1,99 +1,71 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { AlertModal } from './components/AlertModal'
-import { NetworkGraph } from './components/NetworkGraph'
-import { NetworkTable } from './components/NetworkTable'
-import { NodeDetails } from './components/NodeDetails'
-import { SignalsPanel } from './components/SignalsPanel'
-import { Timeline } from './components/Timeline'
-import { DURATION_HOURS, EDGES, NARRATIVE, NODES } from './data/scenario'
-import { buildTimeline, firstElitePickup, firstHourAtStage } from './engine/detection'
-import { advanceHour, formatHour } from './engine/playback'
+import { useCallback, useEffect, useState } from 'react'
+import { ElectionCountdown } from './components/ElectionCountdown'
+import { PhasesDashboard } from './components/PhasesDashboard'
+import { ReplayView } from './components/ReplayView'
+import { scenarioTime, type ScenarioAnchor } from './components/useScenarioNow'
+import { DEFAULT_PRESET, SCENARIO_PRESETS, WEEKS, type PhaseId } from './data/election'
+import { localDate, weekIndexFor } from './engine/phases'
 
-const HOURS_PER_SECOND = 8
+type Route = { view: 'replay' } | { view: 'phases'; phase: PhaseId | null }
+
+function parseHash(hash: string): Route {
+  const match = hash.match(/^#phases(?:\/([123]))?$/)
+  if (!match) return { view: 'replay' }
+  return { view: 'phases', phase: match[1] ? (Number(match[1]) as PhaseId) : null }
+}
+
+const anchorAt = (date: Date): ScenarioAnchor => ({ date: date.getTime(), chosenAt: Date.now() })
 
 export default function App() {
-  const timeline = useMemo(() => buildTimeline(NODES), [])
-  const warningHour = useMemo(() => firstHourAtStage(timeline, 'Warning')!, [timeline])
-  const eliteHour = useMemo(() => firstElitePickup(NODES)!, [])
-
-  const [hour, setHour] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState(1)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [view, setView] = useState<'graph' | 'table'>('graph')
-  const [alertOpen, setAlertOpen] = useState(false)
-  const [warningPaused, setWarningPaused] = useState(false)
-
-  const hourRef = useRef(0)
-  const warningShownRef = useRef(false)
-
-  const moveTo = (next: number) => {
-    hourRef.current = next
-    setHour(next)
-  }
+  const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash))
+  const [presetId, setPresetId] = useState<string | null>(DEFAULT_PRESET.id)
+  const [anchor, setAnchor] = useState<ScenarioAnchor>(() => anchorAt(localDate(DEFAULT_PRESET.date)))
 
   useEffect(() => {
-    if (!playing) return
-    let frame = 0
-    let last = performance.now()
+    const onHash = () => setRoute(parseHash(window.location.hash))
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
 
-    const tick = (now: number) => {
-      const elapsedMs = now - last
-      last = now
-      const previous = hourRef.current
-      let next = advanceHour(previous, elapsedMs, HOURS_PER_SECOND * speed)
+  const go = useCallback((hash: string) => {
+    window.location.hash = hash
+  }, [])
 
-      if (!warningShownRef.current && previous < warningHour && next >= warningHour) {
-        warningShownRef.current = true
-        next = warningHour
-        moveTo(next)
-        setWarningPaused(true)
-        setPlaying(false)
-        return
-      }
+  const choosePreset = useCallback((id: string) => {
+    const preset = SCENARIO_PRESETS.find((item) => item.id === id)
+    if (!preset) return
+    setPresetId(id)
+    setAnchor(anchorAt(localDate(preset.date)))
+  }, [])
 
-      moveTo(next)
-      if (next >= DURATION_HOURS) {
-        setPlaying(false)
-        return
-      }
-      frame = requestAnimationFrame(tick)
+  const chooseWeek = useCallback((week: number) => {
+    const clamped = Math.max(0, Math.min(WEEKS.length - 1, week))
+    const date = localDate(WEEKS[clamped])
+    date.setHours(10, 0, 0, 0)
+    setPresetId(null)
+    setAnchor(anchorAt(date))
+  }, [])
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey || document.querySelector('dialog[open]')) return
+      const target = event.target as HTMLElement | null
+      if (target?.closest('input, select, textarea, [contenteditable="true"]') && event.key !== 'Escape') return
+      if (event.key === '1') go('replay')
+      if (event.key === '2') go('phases')
+      if (route.view !== 'phases') return
+      if (event.key === '[') chooseWeek(weekIndexFor(scenarioTime(anchor)) - 1)
+      if (event.key === ']') chooseWeek(weekIndexFor(scenarioTime(anchor)) + 1)
+      if (event.key === 'Escape' && route.phase) go('phases')
     }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [anchor, chooseWeek, go, route])
 
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
-  }, [playing, speed, warningHour])
-
-  const togglePlay = () => {
-    setWarningPaused(false)
-    if (hourRef.current >= DURATION_HOURS) {
-      warningShownRef.current = false
-      moveTo(0)
-    }
-    setPlaying((value) => !value)
-  }
-
-  const restart = () => {
-    warningShownRef.current = false
-    setWarningPaused(false)
-    setSelectedId(null)
-    moveTo(0)
-    setPlaying(true)
-  }
-
-  const scrub = (next: number) => {
-    setPlaying(false)
-    setWarningPaused(false)
-    if (next < warningHour) warningShownRef.current = false
-    moveTo(next)
-  }
-
-  const snapshot = timeline[Math.min(Math.floor(hour), DURATION_HOURS)]
-  const selected = NODES.find((node) => node.id === selectedId && node.pickupHour <= hour) ?? null
-  const leadHours = Math.round(eliteHour - warningHour)
+  const phasesOpen = route.view === 'phases'
 
   return (
-    <div className="app">
+    <div className={`app ${phasesOpen ? 'app-phases' : ''}`}>
       <div className="sim-banner" role="note">
         <strong>Simulated scenario.</strong> All entities are fictional.
       </div>
@@ -102,79 +74,28 @@ export default function App() {
         <div className="brand">
           <div className="brand-row">
             <h1>ARGUS</h1>
-            <a className="product-link" href="../gaia/">
-              GAIA →
-            </a>
+            <a className="product-link" href="../gaia/">GAIA →</a>
           </div>
           <span>Disinformation network early warning</span>
         </div>
-        <div className="narrative">
-          <span className="eyebrow">Tracked narrative</span>
-          <strong>{NARRATIVE.title}</strong>
-          <span>False claim: {NARRATIVE.claim}</span>
+        <span aria-hidden="true" />
+        <div className="view-switch" role="group" aria-label="ARGUS view">
+          <button type="button" aria-pressed={!phasesOpen} onClick={() => go('replay')}>Network replay</button>
+          <button type="button" aria-pressed={phasesOpen} onClick={() => go('phases')}>Election phases</button>
         </div>
-        <div className="clock" aria-live="off">
-          <span className="eyebrow">Simulation time</span>
-          <strong>{formatHour(hour)}</strong>
-        </div>
+        <ElectionCountdown anchor={anchor} onOpen={() => go('phases')} />
       </header>
 
-      <main className="workspace">
-        <section className="graph-panel" aria-label="Disinformation network">
-          <div className="view-toggle" role="group" aria-label="Network view">
-            <button type="button" aria-pressed={view === 'graph'} onClick={() => setView('graph')}>
-              Graph
-            </button>
-            <button type="button" aria-pressed={view === 'table'} onClick={() => setView('table')}>
-              Table
-            </button>
-          </div>
-          {view === 'graph' ? (
-            <NetworkGraph nodes={NODES} edges={EDGES} hour={hour} selectedId={selected?.id ?? null} onSelect={setSelectedId} />
-          ) : (
-            <NetworkTable nodes={NODES} hour={hour} selectedId={selected?.id ?? null} onSelect={setSelectedId} />
-          )}
-          {warningPaused && (
-            <div className="warning-callout" role="alert">
-              <div>
-                <strong>◆ Early warning triggered</strong>
-                <span>
-                  The pattern matched {leadHours} hours ({(leadHours / 24).toFixed(1)} days) before the first politician or
-                  broadcaster picks up the claim.
-                </span>
-              </div>
-              <button type="button" className="primary" onClick={() => setAlertOpen(true)}>
-                Review alert
-              </button>
-              <button type="button" onClick={togglePlay}>
-                Continue
-              </button>
-            </div>
-          )}
-        </section>
-
-        <aside className="sidebar">
-          <SignalsPanel snapshot={snapshot} onReviewAlert={() => setAlertOpen(true)} />
-          <NodeDetails node={selected} nodes={NODES} onSelect={setSelectedId} />
-        </aside>
-      </main>
-
-      <Timeline
-        hour={hour}
-        playing={playing}
-        speed={speed}
-        nodes={NODES}
-        warningHour={warningHour}
-        eliteHour={eliteHour}
-        onTogglePlay={togglePlay}
-        onRestart={restart}
-        onScrub={scrub}
-        onSpeed={setSpeed}
+      <ReplayView active={!phasesOpen} />
+      <PhasesDashboard
+        active={phasesOpen}
+        phase={route.view === 'phases' ? route.phase : null}
+        anchor={anchor}
+        presetId={presetId}
+        onPreset={choosePreset}
+        onWeek={chooseWeek}
+        onNavigate={go}
       />
-
-      {alertOpen && (
-        <AlertModal snapshot={snapshot} leadHours={leadHours} eliteHour={eliteHour} onClose={() => setAlertOpen(false)} />
-      )}
     </div>
   )
 }
